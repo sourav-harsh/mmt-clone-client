@@ -38,7 +38,7 @@ export default function HotelCheckout() {
         params.get("checkOut") ||
         new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const nights = nightsBetween(checkIn, checkOut);
-    const rooms = params.get("guests")?.slice(0, 1) || 1;
+    const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
     const maxGuestsInfo = params.get("guests").split(",").at(1) || 1;
     const maxGuests = maxGuestsInfo.split("Adults").at(0) || 1;
     const totals = calcTotals(room.price, nights, rooms);
@@ -183,7 +183,7 @@ export default function HotelCheckout() {
     return (
         <div className="bg-gray-50 min-h-screen py-6">
             <div className="max-w-6xl mx-auto px-4 grid gap-5 lg:grid-cols-[2fr_1fr]">
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-5">
                     <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
                         <h2 className="font-bold text-mmtDark text-lg">Guest Details, {maxGuestsInfo}</h2>
                         <p className="text-xs text-gray-500">As mentioned on your government ID</p>
@@ -315,12 +315,13 @@ export default function HotelCheckout() {
                     </section>
 
                     <button
-                        type="submit"
+                        type="button"
+                        onClick={handleSubmit}
                         className="w-full bg-mmtOrange hover:bg-orange-600 text-white font-bold py-3 rounded flex items-center justify-center gap-2"
                     >
                         <FaLock/> PAY {fmtINR(totals.total)}
                     </button>
-                </form>
+                </div>
 
                 <aside className="space-y-4">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
