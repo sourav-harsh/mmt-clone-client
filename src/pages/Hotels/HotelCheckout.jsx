@@ -33,7 +33,9 @@ export default function HotelCheckout() {
     params.get("checkOut") ||
     new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const nights = nightsBetween(checkIn, checkOut);
-  const totals = calcTotals(room.price, nights);
+
+  const rooms = params.get("guests")?.slice(0,1) || 1;
+  const totals = calcTotals(room.price, nights,rooms);
 
   const update = (k) => (e) => setGuest({ ...guest, [k]: e.target.value });
 
@@ -181,7 +183,7 @@ export default function HotelCheckout() {
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
             <h3 className="font-bold text-mmtDark">Price Breakup</h3>
-            <Row label={`Room price (${nights} × ${fmtINR(room.price)})`} value={fmtINR(totals.subtotal)} />
+            <Row label={`Room price (${rooms} × ${fmtINR(room.price)})`} value={fmtINR(totals.subtotal)} />
             <Row label="Taxes & fees (18%)" value={fmtINR(totals.taxes)} />
             <Row label="Discount" value={`- ${fmtINR(totals.discount)}`} positive />
             <div className="border-t mt-2 pt-2 flex justify-between font-bold text-mmtDark">

@@ -6,8 +6,8 @@ export function nightsBetween(checkIn, checkOut) {
   return Math.max(1, diff);
 }
 
-export function calcTotals(roomPrice, nights) {
-  const subtotal = roomPrice * nights;
+export function calcTotals(roomPrice, nights, rooms) {
+  const subtotal = roomPrice * nights * rooms;
   const taxes = Math.round(subtotal * 0.18);
   const discount = Math.round(subtotal * 0.05);
   const total = subtotal + taxes - discount;

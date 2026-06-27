@@ -3,13 +3,7 @@ import SectionTitle from "../../kernel/presentation/utils/SectionTitle.jsx";
 import HotelSearchForm from "./components/HotelSearchForm.jsx";
 import HotelCard from "./components/HotelCard.jsx";
 import {useNavigate} from "react-router-dom";
-
-const hotels = [
-  { name: "The Taj Palace", city: "New Delhi", rating: 4.7, reviews: 2310, price: 8999, img: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=800" },
-  { name: "Oberoi Grand", city: "Kolkata", rating: 4.8, reviews: 1820, price: 11200, img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800" },
-  { name: "Leela Sky Villas", city: "Mumbai", rating: 4.6, reviews: 980, price: 15750, img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
-  { name: "ITC Royal Bengal", city: "Bengaluru", rating: 4.5, reviews: 1455, price: 7200, img: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800" },
-];
+import {hotels} from "../../kernel/presentation/utils/hotelsData.js";
 
 export default function Hotels() {
     const navigate = useNavigate();
