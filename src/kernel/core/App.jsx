@@ -7,6 +7,9 @@ import Hotels from "../../pages/Hotels/Hotels.jsx";
 import Holidays from "../../pages/Holidays/Holidays.jsx";
 import Trains from "../../pages/Trains/Trains.jsx";
 import NotFound from "../presentation/utils/NotFound.jsx";
+import HotelCheckout from "../../pages/Hotels/HotelCheckout.jsx";
+import HotelDetail from "../../pages/Hotels/HotelDetail.jsx";
+import HotelSearch from "../../pages/Hotels/HotelSearch.jsx";
 
 export default function App() {
   return (
@@ -14,12 +17,15 @@ export default function App() {
       <Navbar />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/flights" element={<Flights />} />
-          <Route path="/hotels" element={<Hotels />} />
-          <Route path="/holidays" element={<Holidays />} />
-          <Route path="/trains" element={<Trains />} />
-          <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/flights" element={<Flights />} />
+            <Route path="/hotels" element={<Hotels />} />
+            <Route path="/hotels/search" element={<HotelSearch />} />
+            <Route path="/hotels/:id" element={<HotelDetail />} />
+            <Route path="/hotels/:id/checkout" element={<HotelCheckout />} />
+            <Route path="/holidays" element={<Holidays />} />
+            <Route path="/trains" element={<Trains />} />
+            <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />

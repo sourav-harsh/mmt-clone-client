@@ -2,6 +2,7 @@ import PageHero from "../../kernel/presentation/utils/PageHero.jsx";
 import SectionTitle from "../../kernel/presentation/utils/SectionTitle.jsx";
 import HotelSearchForm from "./components/HotelSearchForm.jsx";
 import HotelCard from "./components/HotelCard.jsx";
+import {useNavigate} from "react-router-dom";
 
 const hotels = [
   { name: "The Taj Palace", city: "New Delhi", rating: 4.7, reviews: 2310, price: 8999, img: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=800" },
@@ -11,6 +12,13 @@ const hotels = [
 ];
 
 export default function Hotels() {
+    const navigate = useNavigate();
+
+    const handleSearch = (params) => {
+        const qs = new URLSearchParams(params).toString();
+        navigate(`/hotels/search?${qs}`);
+    };
+
   return (
     <div>
       <PageHero
@@ -19,15 +27,15 @@ export default function Hotels() {
         bg="https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1600"
       />
       <div className="max-w-6xl mx-auto px-4 -mt-12 relative z-10">
-        <HotelSearchForm />
+          <HotelSearchForm onSearch={handleSearch} />
       </div>
       <div className="max-w-6xl mx-auto px-4 mt-10">
         <SectionTitle title="Top Rated Hotels" />
-        <div className="grid gap-5 md:grid-cols-2">
-          {hotels.map((h) => (
-            <HotelCard key={h.name} {...h} />
-          ))}
-        </div>
+          <div className="grid gap-5 md:grid-cols-2">
+              {hotels.slice(0, 4).map((h) => (
+                  <HotelCard key={h.id} hotel={h} />
+              ))}
+          </div>
       </div>
     </div>
   );
