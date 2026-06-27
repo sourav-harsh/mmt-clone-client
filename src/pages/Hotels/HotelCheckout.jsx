@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Link, useParams, useSearchParams} from "react-router-dom";
 import {FaCheckCircle, FaLock, FaMapMarkerAlt, FaPlus, FaStar} from "react-icons/fa";
 import {getHotelById} from "../../kernel/presentation/utils/hotelsData.js";
@@ -12,40 +12,11 @@ export default function HotelCheckout() {
     const {id} = useParams();
     const [params] = useSearchParams();
     const hotel = getHotelById(id);
-
-    const [guest, setGuest] = useState([
-        {
-            id: 1,
-            firstName: "",
-            lastName: "",
-            email: "",
-            phone: "",
-            requests: "",
-            isAdded: false
-        }
-    ]);
-    const [guestHistory, setGuestHistory] = useState([
-        {
-            id: 2,
-            firstName: "Shashank",
-            lastName: "Shekhar",
-            email: "shashank@gmail.com",
-            phone: "56754654",
-            requests: "fgdf",
-            isAdded: false
-        }, {
-            id: 3,
-            firstName: "Sourav",
-            lastName: "Kumar",
-            email: "asdf@gmail.com",
-            phone: "34456676",
-            requests: "dfwer",
-            isAdded: false
-        }
-    ]);
+    const [guest, setGuest] = useState([]);
+    const [guestEdit, setGuestEdit] = useState(null);
+    const [guestHistory, setGuestHistory] = useState([]);
     const [payment, setPayment] = useState("card");
     const [confirmed, setConfirmed] = useState(false);
-
     const room = useMemo(() => {
         if (!hotel) return null;
         const rid = params.get("roomId");
@@ -54,13 +25,22 @@ export default function HotelCheckout() {
 
     if (!hotel) return <NotFound/>;
 
+    useEffect(() => {
+        const history = localStorage.getItem("guestHistory");
+        if (history) {
+            setGuestHistory(JSON.parse(history));
+            console.log('history', guestHistory)
+        }
+    }, []);
+
     const checkIn = params.get("checkIn") || new Date().toISOString().slice(0, 10);
     const checkOut =
         params.get("checkOut") ||
         new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const nights = nightsBetween(checkIn, checkOut);
-
     const rooms = params.get("guests")?.slice(0, 1) || 1;
+    const maxGuestsInfo = params.get("guests").split(",").at(1) || 1;
+    const maxGuests = maxGuestsInfo.split("Adults").at(0) || 1;
     const totals = calcTotals(room.price, nights, rooms);
 
     const update = (k) => (e) => {
@@ -115,27 +95,89 @@ export default function HotelCheckout() {
     function removeGuest(i) {
         console.log(i)
         const newGuest = [...guest];
-        const updatedGuest =newGuest.filter(g => g.id !== i)
+        const updatedGuest = newGuest.filter(g => g.id !== i)
         console.log('newGuest', updatedGuest)
         setGuest(updatedGuest);
         guestHistory.find(g => g.id === i).isAdded = false;
     }
 
-    function addGuest() {
-
+    function toggleGuestForm() {
+        document.getElementById("saved-first-name-guest").value = "";
+        document.getElementById("saved-last-name-guest").value = "";
+        document.getElementById("saved-phone-name-guest").value = "";
+        document.getElementById("saved-email-name-guest").value = "";
+        document.getElementById("add-guest-saved").classList.toggle("hidden");
     }
 
     function onCheckboxChange(e, gh, i) {
         const isChecked = e.target.checked;
 
         if (isChecked) {
+            if (guest.length === Number(maxGuests)) {
+                alert('Max guests limit reached');
+                return;
+            }
             gh.isAdded = true;
             setGuest([...guest, gh]);
         } else {
             gh.isAdded = false;
-            const updatedGuest= guest.filter(g => g.id !== gh.id);
+            const updatedGuest = guest.filter(g => g.id !== gh.id);
             setGuest(updatedGuest);
         }
+    }
+
+    function addGuestToSave() {
+        // 1. Grab values from inputs
+        const firstName = document.getElementById("saved-first-name-guest").value;
+        const lastName = document.getElementById("saved-last-name-guest").value;
+        const email = document.getElementById("saved-email-name-guest").value;
+        const phone = document.getElementById("saved-phone-name-guest").value;
+
+        let nextGuestHistory = [];
+
+        if (guestEdit) {
+            // UPDATE EXISTING: Map over ALL items, swap out the modified one safely
+            nextGuestHistory = guestHistory.map(g =>
+                g.id === guestEdit.id
+                    ? { ...g, firstName, lastName, email, phone } // safe immutability
+                    : g
+            );
+            setGuestEdit(null);
+            document.getElementById("saved-first-name-guest").value = "";
+            document.getElementById("saved-last-name-guest").value = "";
+            document.getElementById("saved-phone-name-guest").value = "";
+            document.getElementById("saved-email-name-guest").value = "";
+        } else {
+            // CREATE NEW: Generate a new item and append it
+            const newGuest = {
+                id: guestHistory.length > 0 ? Math.max(...guestHistory.map(g => g.id)) + 1 : 1,
+                firstName,
+                lastName,
+                email,
+                phone,
+                isAdded: false
+            };
+            nextGuestHistory = [...guestHistory, newGuest];
+        }
+
+        // 2. Set React state once using the final array
+        setGuestHistory(nextGuestHistory);
+
+        // 3. Save the exact same final array to localStorage
+        localStorage.setItem("guestHistory", JSON.stringify(nextGuestHistory));
+
+        // 4. Close the modal/form
+        document.getElementById("add-guest-saved").classList.toggle("hidden");
+    }
+
+    function editGuest(id) {
+        const guest = guestHistory.find(g => g.id === id);
+        setGuestEdit(guest);
+        document.getElementById("add-guest-saved").classList.toggle("hidden");
+        document.getElementById("saved-first-name-guest").value = guest.firstName;
+        document.getElementById("saved-last-name-guest").value = guest.lastName;
+        document.getElementById("saved-phone-name-guest").value = guest.phone;
+        document.getElementById("saved-email-name-guest").value = guest.email;
     }
 
     return (
@@ -143,14 +185,15 @@ export default function HotelCheckout() {
             <div className="max-w-6xl mx-auto px-4 grid gap-5 lg:grid-cols-[2fr_1fr]">
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <section className="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
-                        <h2 className="font-bold text-mmtDark text-lg">Guest Details</h2>
+                        <h2 className="font-bold text-mmtDark text-lg">Guest Details, {maxGuestsInfo}</h2>
                         <p className="text-xs text-gray-500">As mentioned on your government ID</p>
                         <AddGuestDetails guest={guest} update={update}/>
                         <div className="space-y-3" id="add-guests">
                             {guest?.map((g, i) => (
-                                <div className={i === 0 ? "hidden" : "flex items-center justify-between border-b border-b-gray-200"}>
+                                <div
+                                    className={i === 0 ? "hidden" : "flex items-center justify-between border-b border-b-gray-200"} key={`guest-${g.id}-${i}`}>
                                     <p>{g.firstName} {g.lastName}</p>
-                                    <button type="button" onClick={() => removeGuest(g.id)}><IoMdClose /></button>
+                                    <button type="button" onClick={() => removeGuest(g.id)}><IoMdClose/></button>
                                 </div>
                             ))}
                         </div>
@@ -158,16 +201,40 @@ export default function HotelCheckout() {
                             className="fixed inset-0 bg-black/50 rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-center hidden"
                             id="add-guest-overlay">
                             <div
-                                className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 w-[30rem] h-96 flex flex-col justify-between">
+                                className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 w-[30rem] min-h-96 flex flex-col justify-between">
                                 <div>
                                     <div className="flex items-center justify-between border-b border-b-gray-200">
                                         <p className="text-2xl font-bold">Saved Guest</p>
                                         <button
                                             type="button"
-                                            onClick={addGuest}
+                                            onClick={toggleGuestForm}
                                             className="text-mmtBlue hover:text-blue-700 font-bold rounded flex items-center gap-2"
                                         >
                                             <FaPlus/> Add Guest
+                                        </button>
+                                    </div>
+                                    <div className="bg-blue-100 rounded-2xl p-4 hidden" id="add-guest-saved">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <p className="text-base font-bold">Add Guest</p>
+                                                <p className="text-xs text-gray-500 pr-10">Name should be as per
+                                                    official govt. ID & travelers below 18 years of age cannot travel
+                                                    alone</p>
+                                            </div>
+                                            <button type="button" onClick={toggleGuestForm}><IoMdClose/></button>
+                                        </div>
+                                        <p></p>
+                                        <div className="grid gap-3 sm:grid-cols-2 my-4">
+                                            <Input label="First Name" id="saved-first-name-guest" required/>
+                                            <Input label="Last Name" id="saved-last-name-guest" required/>
+                                            <Input label="Email" type="email" id="saved-email-name-guest" required/>
+                                            <Input label="Mobile Number" type="tel" pattern="[0-9]{10}"
+                                                   id="saved-phone-name-guest" required/>
+                                        </div>
+                                        <button type="button"
+                                                className="text-mmtBlue hover:text-blue-700 bg-white border border-mmtBlue font-bold rounded-full px-6 py-2 flex items-center gap-2"
+                                                onClick={addGuestToSave}>
+                                            Add to saved Guests
                                         </button>
                                     </div>
                                     <div className="space-y-2 mt-5">
@@ -179,7 +246,7 @@ export default function HotelCheckout() {
                                                            onChange={(e) => onCheckboxChange(e, gh, i + 1)}/>
                                                     <p>{gh.firstName} {gh.lastName}</p>
                                                 </div>
-                                                <button type="button">
+                                                <button type="button" onClick={() => editGuest(gh.id)} >
                                                     <MdEdit/>
                                                 </button>
                                             </div>
