@@ -18,9 +18,10 @@ export default function Navbar() {
                 <Link to="/" className="flex items-center gap-2">
                     <img src="/images/logo.svg" alt="MakeMyTrip" className="h-9 w-9"/>
                     <span className="text-xl font-bold text-mmtDark">
-            make<span className="text-mmtBlue">my</span>
-            <span className="text-mmtOrange">trip</span>
-          </span>
+                        make
+                        <span className="text-mmtBlue">my</span>
+                        <span className="text-mmtOrange">trip</span>
+                    </span>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-1">
@@ -53,21 +54,24 @@ export default function Navbar() {
             </div>
 
             {/* mobile nav */}
-            <nav className="md:hidden flex overflow-x-auto border-t border-gray-100">
+            <nav className="md:hidden flex overflow-x-auto border-t border-gray-100 z-50">
                 {links.map((l) => (
-                    <NavLink
-                        key={l.to}
-                        to={l.to}
-                        end={l.to === "/"}
-                        className={({isActive}) =>
-                            `flex flex-col items-center justify-center min-w-[80px] px-3 py-2 text-xs font-medium ${
-                                isActive ? "text-mmtBlue" : "text-gray-600"
-                            }`
-                        }
-                    >
-                        <span className="text-lg">{l.icon}</span>
-                        {l.label}
-                    </NavLink>
+                    <div className="relative">
+                        <NavLink
+                            key={l.to}
+                            to={l.to}
+                            end={l.to === "/"}
+                            className={({isActive}) =>
+                                `flex flex-col items-center justify-center min-w-[80px] px-3 py-2 text-xs font-medium ${l.isAvailable ? '' : 'opacity-25 pointer-events-none'} ${
+                                    isActive ? "text-mmtBlue" : "text-gray-600"
+                                }`
+                            }
+                        >
+                            <span className="text-lg">{l.icon}</span>
+                            {l.label}
+                        </NavLink>
+                        <ComingSoon isActive={!l.isAvailable} classValue="-top-0 -right-1"/>
+                    </div>
                 ))}
             </nav>
         </header>
