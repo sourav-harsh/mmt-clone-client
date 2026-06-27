@@ -2,6 +2,13 @@
 
 A production-ready frontend clone of MakeMyTrip built with React, Vite, Tailwind CSS, and React Icons.
 
+## Live Demo : [MakeMyTrip Clone](https://mmt-clone-client.vercel.app/)
+
+
+![Home Page](/public/images/Home_page.png)
+![Hotel Search Page](/public/images/Hotel_search_page.png)
+![Hotel Search Result Page](/public/images/Hotel_search_result.png)
+
 ## Project Structure
 
 ```
@@ -44,3 +51,4 @@ npm run preview  # preview build
 - React Icons
 - Vite 5
 # mmt-clone-client
+
