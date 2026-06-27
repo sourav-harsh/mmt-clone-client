@@ -11,7 +11,7 @@ export default function RoomSelection({ hotel, qs }) {
     params.get("checkOut") ||
     new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const nights = nightsBetween(checkIn, checkOut);
-  const rooms = params.get("guests")?.slice(0,1) || 1;
+  const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
 
   const [selectedId, setSelectedId] = useState(hotel.rooms[0].id);
   const selectedRoom = useMemo(
