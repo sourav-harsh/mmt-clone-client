@@ -11,7 +11,8 @@ export default function RoomSelection({ hotel, qs }) {
     params.get("checkOut") ||
     new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const nights = nightsBetween(checkIn, checkOut);
-  const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
+  const guests = params.get("guests");
+  const rooms = params.get("guests")?.split("Room").at(0) || 1;
 
   const [selectedId, setSelectedId] = useState(hotel.rooms[0].id);
   const selectedRoom = useMemo(
@@ -25,7 +26,7 @@ export default function RoomSelection({ hotel, qs }) {
     search.set("roomId", selectedId);
     if (!search.get("checkIn")) search.set("checkIn", checkIn);
     if (!search.get("checkOut")) search.set("checkOut", checkOut);
-    navigate(`/hotels/${hotel.id}/checkout?${search.toString()}`);
+    navigate(`/hotels/${hotel.hotel.id}/checkout?${search.toString()}`);
   };
 
   return (
@@ -33,7 +34,7 @@ export default function RoomSelection({ hotel, qs }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold text-mmtDark text-lg">Select Rooms</h2>
         <p className="text-xs text-gray-500">
-            {rooms} {rooms > 1 ? "rooms" : "room"} • {nights} {nights > 1 ? "nights" : "night"} • {checkIn} → {checkOut}
+            {guests} • {nights} {nights > 1 ? "nights" : "night"} • {checkIn} → {checkOut}
         </p>
       </div>
 
@@ -48,7 +49,7 @@ export default function RoomSelection({ hotel, qs }) {
               }`}
             >
               <div className="flex-1">
-                <h3 className="font-bold text-mmtDark">{r.name}</h3>
+                <h3 className="font-bold text-mmtDark">{r.type}</h3>
                 <div className="flex flex-wrap gap-3 text-xs text-gray-600 mt-2">
                   <span className="flex items-center gap-1"><FaBed /> {r.bed}</span>
                   <span className="flex items-center gap-1"><FaRulerCombined /> {r.size}</span>
@@ -84,7 +85,7 @@ export default function RoomSelection({ hotel, qs }) {
       <div className="mt-5 border-t pt-4 flex flex-wrap justify-between items-center gap-3">
         <div className="text-sm text-gray-600">
           <p>
-            <strong className="text-mmtDark">{selectedRoom.name}</strong> × {nights}{" "}
+            <strong className="text-mmtDark">{selectedRoom.type}</strong> × {nights}{" "}
             {nights > 1 ? "nights" : "night"}
           </p>
           <p className="text-xs">Total including taxes & discounts</p>

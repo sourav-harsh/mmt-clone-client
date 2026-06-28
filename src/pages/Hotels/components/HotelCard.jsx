@@ -2,13 +2,13 @@ import { FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 export default function HotelCard({ hotel, searchQs = "" }) {
-    const { id, name, city, address, rating, reviews, price,photos, amenities = [] } = hotel;
+    const { id, name, city, address, rating, reviews, price, photos,img, amenities = [] } = hotel;
     const detailUrl = `/hotels/${id}${searchQs ? `?${searchQs}` : ""}`;
 
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 flex flex-col sm:flex-row">
             <Link to={detailUrl} className="sm:w-56 shrink-0">
-                <img src={photos[0]} alt={name} className="w-full h-44 sm:h-full object-cover" loading="lazy" />
+                <img src={photos?.at(0)||img} alt={name} className="w-full h-44 sm:h-full object-cover" loading="lazy" />
             </Link>
             <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>

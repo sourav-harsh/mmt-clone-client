@@ -129,7 +129,7 @@ export default function HotelSearch() {
                                     <p className="text-gray-600">No hotels match your filters. Try adjusting them.</p>
                                 </div>
                             ) : (
-                                results.map((h) => <HotelCard key={h.id} hotel={h} searchQs={qs} />)
+                                results?.map((h) => <HotelCard key={h.id} hotel={h} searchQs={qs} />)
                             )}
                         </div>
                     </section>

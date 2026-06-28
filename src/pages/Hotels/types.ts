@@ -36,8 +36,8 @@ export interface RoomData{
     amenities: [],
     price: number
 }
-export interface HotelInfoData{
-    hotel:Hotel,
-    rooms:RoomData[]
+export interface HotelInfoData {
+    hotel: Hotel;
+    rooms: RoomData[];
 }
 export interface HotelInfoResponse extends BaseResponse<HotelInfoData> {}

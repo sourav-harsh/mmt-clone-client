@@ -7,7 +7,7 @@ export class HotelRepository{
         return response.data;
     }
     async getHotelInfoById(id:number, request:HotelInfoRequest):Promise<HotelInfoResponse> {
-        const response = await axiosClient.get(`/hotels/${id}`);
+        const response = await axiosClient.post(`/hotels/${id}/info`,request);
         return response.data;
     }
 }

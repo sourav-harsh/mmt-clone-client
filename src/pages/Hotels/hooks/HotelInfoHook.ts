@@ -2,7 +2,7 @@ import {useState} from "react";
 import {HotelInfoRequest} from "../types";
 import { hotelService } from "../service/HotelService";
 
-export function hotelInfoHook() {
+export function useHotelInfoHook() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
