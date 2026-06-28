@@ -1,6 +1,7 @@
-import {Link, NavLink} from "react-router-dom";
+import {Link, NavLink, useNavigate} from "react-router-dom";
 import {FaHome, FaHotel, FaPlane, FaTrain, FaUmbrellaBeach, FaUserCircle,} from "react-icons/fa";
 import ComingSoon from "./ComingSoon.jsx";
+import {useEffect, useState} from "react";
 
 const links = [
     {to: "/", label: "Home", icon: <FaHome/>, isActive: false, isAvailable: true},
@@ -12,6 +13,13 @@ const links = [
 
 
 export default function Navbar() {
+    const navigate = useNavigate();
+    const [loggedIn, setLoggedIn] = useState(false);
+
+    useEffect(() => {
+        localStorage.getItem("accessToken") && setLoggedIn(true);
+    }, []);
+
     return (
         <header className="bg-white  shadow sticky top-0 z-50">
             <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
@@ -47,10 +55,23 @@ export default function Navbar() {
                     ))}
                 </nav>
 
-                <button className="flex items-center gap-2 text-gray-700 hover:text-mmtBlue">
-                    <FaUserCircle className="text-2xl"/>
-                    <span className="hidden sm:inline text-sm font-semibold">Login</span>
-                </button>
+                {loggedIn ? <div onClick={() => document.getElementById("profileDropdown").classList.toggle("hidden")} className=" cursor-pointer border border-green-400 rounded-full relative">
+                        <FaUserCircle className="text-2xl text-green-400"/>
+                    <div className="absolute top-8 right-0 min-w-40 min-h-20 bg-black/80 rounded-xl flex flex-col items-center justify-center gap-5 p-5" id="profileDropdown">
+                        <button className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-xl text-white w-full" onClick={() => navigate("/profile")}>
+                            Profile
+                        </button>
+                        <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-xl text-white w-full">
+                            Logout
+                        </button>
+                    </div>
+                </div> :
+                    <button className="flex items-center gap-2 text-gray-700 hover:text-mmtBlue"
+                            onClick={() => navigate("/login")}>
+                        <FaUserCircle className="text-2xl"/>
+                        <span className="hidden sm:inline text-sm font-semibold">Login</span>
+                    </button>
+                }
             </div>
 
             {/* mobile nav */}

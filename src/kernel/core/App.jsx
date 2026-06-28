@@ -10,6 +10,7 @@ import NotFound from "../presentation/utils/NotFound.jsx";
 import HotelCheckout from "../../pages/Hotels/HotelCheckout.jsx";
 import HotelDetail from "../../pages/Hotels/HotelDetail.jsx";
 import HotelSearch from "../../pages/Hotels/HotelSearch.jsx";
+import LoginForm from "../presentation/utils/LoginForm.jsx";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/hotels" element={<Hotels />} />
             <Route path="/hotels/search" element={<HotelSearch />} />
             <Route path="/hotels/:id" element={<HotelDetail />} />
+            <Route path="/login" element={<LoginForm />} />
             <Route path="/hotels/:id/checkout" element={<HotelCheckout />} />
             <Route path="/holidays" element={<Holidays />} />
             <Route path="/trains" element={<Trains />} />
