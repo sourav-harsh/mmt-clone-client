@@ -20,8 +20,7 @@ export default function SearchTabs() {
             {/*navigation bar*/}
             <div className="flex border-b border-gray-200 pt-1 mb-5 overflow-x-auto z-10">
                 {tabs.map((t) => (
-
-                    <div className="relative z-10">
+                    <div key={t.id} className="relative z-10">
                         <button
                             key={t.id}
                             onClick={() => setActive(t.id)}

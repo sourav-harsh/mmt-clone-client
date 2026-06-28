@@ -16,7 +16,6 @@ const repository = new AuthRepository();
         }
 
         const data = await repository.login(request);
-        console.log(data.data.accessToken)
 
         localStorage.setItem(
             "accessToken",

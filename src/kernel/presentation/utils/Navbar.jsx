@@ -34,7 +34,7 @@ export default function Navbar() {
 
                 <nav className="hidden md:flex items-center gap-1">
                     {links.map((l) => (
-                        <div className="relative">
+                        <div key={l.to} className="relative">
                             <NavLink
                                 key={l.to}
                                 to={l.to}
@@ -55,9 +55,9 @@ export default function Navbar() {
                     ))}
                 </nav>
 
-                {loggedIn ? <div onClick={() => document.getElementById("profileDropdown").classList.toggle("hidden")} className=" cursor-pointer border border-green-400 rounded-full relative">
-                        <FaUserCircle className="text-2xl text-green-400"/>
-                    <div className="absolute top-8 right-0 min-w-40 min-h-20 bg-black/80 rounded-xl flex flex-col items-center justify-center gap-5 p-5" id="profileDropdown">
+                {loggedIn ? <div onClick={() => document.getElementById("profileDropdown").classList.toggle("hidden")} className="cursor-pointer border border-green-400 rounded-full relative">
+                        <FaUserCircle className="text-2xl text-green-400 cursor-pointer"/>
+                    <div className="absolute top-8 right-0 min-w-40 min-h-20 bg-black/80 rounded-xl flex flex-col items-center justify-center gap-5 p-5 hidden cursor-pointer" id="profileDropdown">
                         <button className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-xl text-white w-full" onClick={() => navigate("/profile")}>
                             Profile
                         </button>
@@ -77,7 +77,7 @@ export default function Navbar() {
             {/* mobile nav */}
             <nav className="md:hidden flex overflow-x-auto border-t border-gray-100 z-50">
                 {links.map((l) => (
-                    <div className="relative">
+                    <div key={l.to} className="relative">
                         <NavLink
                             key={l.to}
                             to={l.to}
