@@ -39,8 +39,8 @@ export default function HotelCheckout() {
         new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const nights = nightsBetween(checkIn, checkOut);
     const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
-    const maxGuestsInfo = params.get("guests").split(",").at(1) || 1;
-    const maxGuests = maxGuestsInfo.split("Adults").at(0) || 1;
+    const maxGuestsInfo = params.get("guests")?.split(",").at(1) || 1;
+    const maxGuests = params.get("guests")?.split(",").at(1)?.split("Adults").at(0) || 1;
     const totals = calcTotals(room.price, nights, rooms);
 
     const update = (k) => (e) => {

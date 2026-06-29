@@ -25,8 +25,8 @@ export default function Navbar() {
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-1">
-                    {links.map((l) => (
-                        <div className="relative">
+                    {links.map((l,i) => (
+                        <div key={l.to + i} className="relative">
                             <NavLink
                                 key={l.to}
                                 to={l.to}
@@ -55,8 +55,8 @@ export default function Navbar() {
 
             {/* mobile nav */}
             <nav className="md:hidden flex overflow-x-auto border-t border-gray-100 z-50">
-                {links.map((l) => (
-                    <div className="relative">
+                {links.map((l,  i) => (
+                    <div key={l.to + i} className="relative">
                         <NavLink
                             key={l.to}
                             to={l.to}
