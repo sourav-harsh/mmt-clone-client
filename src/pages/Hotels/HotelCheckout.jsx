@@ -1,17 +1,18 @@
 import {useEffect, useMemo, useState} from "react";
 import {Link, useParams, useSearchParams} from "react-router-dom";
 import {FaCheckCircle, FaLock, FaMapMarkerAlt, FaPlus, FaStar} from "react-icons/fa";
-import {getHotelById} from "../../kernel/presentation/utils/hotelsData.js";
 import NotFound from "../../kernel/presentation/utils/NotFound.jsx";
 import {calcTotals, fmtINR, nightsBetween} from "../../kernel/presentation/utils/bookingUtils.js";
 import AddGuestDetails from "./components/AddGuestDetails.jsx";
 import {MdEdit} from "react-icons/md";
 import {IoMdClose} from "react-icons/io";
+import {useHotelInfoHook} from "./hooks/HotelInfoHook.ts";
+import ComingSoon from "../../kernel/presentation/utils/ComingSoon.jsx";
 
 export default function HotelCheckout() {
     const {id} = useParams();
     const [params] = useSearchParams();
-    const hotel = getHotelById(id);
+    const [hotel, sethotel] = useState();
     const [guest, setGuest] = useState([]);
     const [guestEdit, setGuestEdit] = useState(null);
     const [guestHistory, setGuestHistory] = useState([]);
@@ -23,22 +24,65 @@ export default function HotelCheckout() {
         return hotel.rooms.find((r) => r.id === rid) || hotel.rooms[0];
     }, [hotel, params]);
 
-    if (!hotel) return <NotFound/>;
+    const {
+        hotelInfo,
+        loading,
+        error
+    } = useHotelInfoHook();
+
+    const getHotelWithId = async (id) => {
+        try {
+            const startDate = params.get("checkIn");
+            const endDate = params.get("checkOut");
+
+            // Safely extract the room number
+            const guestsString = params.get("guests") || "";
+            const roomsCount = Number(guestsString.split("Room").at(0)) || 1;
+
+            // Await the API call directly
+            const getHotel = await hotelInfo(id, {startDate, endDate, roomsCount});
+
+            // Return the clean inner value directly
+            return getHotel.data;
+        } catch (error) {
+            console.error("Failed to fetch hotel info:", error);
+            throw error;
+        }
+    };
 
     useEffect(() => {
+        console.log({
+            id,
+            city: params.get("city"),
+            checkIn: params.get("checkIn"),
+            checkOut: params.get("checkOut"),
+            guests: params.get("guests")
+        });
+        const loadData = async () => {
+            // Await the function to extract the direct inner data value
+            const hotelData = await getHotelWithId(id);
+
+            console.log(hotelData); // This is your clean, direct inner data object!
+            sethotel(hotelData);
+        };
+
+        loadData();
+        
         const history = localStorage.getItem("guestHistory");
         if (history) {
             setGuestHistory(JSON.parse(history));
             console.log('history', guestHistory)
         }
-    }, []);
+    }, [id]);
+
+    if (!hotel) return <NotFound/>;
 
     const checkIn = params.get("checkIn") || new Date().toISOString().slice(0, 10);
     const checkOut =
         params.get("checkOut") ||
         new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const nights = nightsBetween(checkIn, checkOut);
-    const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
+    const rooms = params.get("guests")?.split("Room").at(0) || 1;
     const maxGuestsInfo = params.get("guests")?.split(",").at(1) || 1;
     const maxGuests = maxGuestsInfo?.split("Adults").at(0) || 1;
     const totals = calcTotals(room.price, nights, rooms);
@@ -139,7 +183,7 @@ export default function HotelCheckout() {
             // UPDATE EXISTING: Map over ALL items, swap out the modified one safely
             nextGuestHistory = guestHistory.map(g =>
                 g.id === guestEdit.id
-                    ? { ...g, firstName, lastName, email, phone } // safe immutability
+                    ? {...g, firstName, lastName, email, phone} // safe immutability
                     : g
             );
             setGuestEdit(null);
@@ -191,7 +235,8 @@ export default function HotelCheckout() {
                         <div className="space-y-3" id="add-guests">
                             {guest?.map((g, i) => (
                                 <div
-                                    className={i === 0 ? "hidden" : "flex items-center justify-between border-b border-b-gray-200"} key={`guest-${g.id}-${i}`}>
+                                    className={i === 0 ? "hidden" : "flex items-center justify-between border-b border-b-gray-200"}
+                                    key={`guest-${g.id}-${i}`}>
                                     <p>{g.firstName} {g.lastName}</p>
                                     <button type="button" onClick={() => removeGuest(g.id)}><IoMdClose/></button>
                                 </div>
@@ -246,7 +291,7 @@ export default function HotelCheckout() {
                                                            onChange={(e) => onCheckboxChange(e, gh, i + 1)}/>
                                                     <p>{gh.firstName} {gh.lastName}</p>
                                                 </div>
-                                                <button type="button" onClick={() => editGuest(gh.id)} >
+                                                <button type="button" onClick={() => editGuest(gh.id)}>
                                                     <MdEdit/>
                                                 </button>
                                             </div>
@@ -277,30 +322,34 @@ export default function HotelCheckout() {
                         <h2 className="font-bold text-mmtDark text-lg">Payment Method</h2>
                         <div className="mt-3 space-y-2">
                             {[
-                                {id: "card", label: "Credit / Debit Card"},
-                                {id: "upi", label: "UPI"},
-                                {id: "netbanking", label: "Net Banking"},
-                                {id: "wallet", label: "Wallet"},
+                                {id: "card", label: "Credit / Debit Card", isActive: true},
+                                {id: "upi", label: "UPI", isActive: false},
+                                {id: "netbanking", label: "Net Banking", isActive: false},
+                                {id: "wallet", label: "Wallet", isActive: false},
                             ].map((p) => (
                                 <label
                                     key={p.id}
-                                    className={`flex items-center gap-3 border rounded p-3 cursor-pointer ${
+                                    className={`flex items-center justify-between relative border rounded p-3 cursor-pointer ${p.isActive ? "" : "opacity-50 cursor-not-allowed"} ${
                                         payment === p.id ? "border-mmtBlue bg-blue-50/50" : "border-gray-200"
                                     }`}
                                 >
-                                    <input
-                                        type="radio"
-                                        name="pay"
-                                        checked={payment === p.id}
-                                        onChange={() => setPayment(p.id)}
-                                    />
-                                    <span className="text-sm font-medium text-mmtDark">{p.label}</span>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="radio"
+                                            name="pay"
+                                            checked={payment === p.id}
+                                            onChange={() => setPayment(p.id)}
+                                            disabled={!p.isActive}
+                                        />
+                                        <span className="text-sm font-medium text-mmtDark">{p.label}</span>
+                                    </div>
+                                    <ComingSoon isActive={!p.isActive} classValue="right-2 top-1/2 -translate-y-1/2"/>
                                 </label>
                             ))}
                         </div>
 
                         {payment === "card" && (
-                            <div className="grid gap-3 sm:grid-cols-2 mt-4">
+                            <div className="grid gap-3 sm:grid-cols-2 mt-4 hidden">
                                 <Input label="Card Number" placeholder="1234 5678 9012 3456" required/>
                                 <Input label="Name on Card" required/>
                                 <Input label="Expiry (MM/YY)" placeholder="MM/YY" required/>
@@ -308,7 +357,7 @@ export default function HotelCheckout() {
                             </div>
                         )}
                         {payment === "upi" && (
-                            <div className="mt-4">
+                            <div className="mt-4 ">
                                 <Input label="UPI ID" placeholder="yourname@bank" required/>
                             </div>
                         )}
@@ -325,15 +374,16 @@ export default function HotelCheckout() {
 
                 <aside className="space-y-4">
                     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-                        <img src={hotel.img} alt={hotel.name} className="w-full h-40 object-cover"/>
+                        <img src={hotel.hotel.photos.at(0)} alt={hotel.hotel.name}
+                             className="w-full h-40 object-cover"/>
                         <div className="p-4">
-                            <h3 className="font-bold text-mmtDark">{hotel.name}</h3>
+                            <h3 className="font-bold text-mmtDark">{hotel.hotel.name}</h3>
                             <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                                <FaMapMarkerAlt/> {hotel.address}
+                                <FaMapMarkerAlt/> {hotel.hotel.contactInfo.address}
                             </p>
                             <span
                                 className="inline-flex items-center gap-1 mt-2 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                <FaStar className="text-[10px]"/> {hotel.rating}
+                <FaStar className="text-[10px]"/> {hotel.hotel.rating}
               </span>
                         </div>
                     </div>
