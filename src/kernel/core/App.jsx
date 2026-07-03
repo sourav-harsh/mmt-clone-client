@@ -10,6 +10,9 @@ import NotFound from "../presentation/utils/NotFound.jsx";
 import HotelCheckout from "../../pages/Hotels/HotelCheckout.jsx";
 import HotelDetail from "../../pages/Hotels/HotelDetail.jsx";
 import HotelSearch from "../../pages/Hotels/HotelSearch.jsx";
+import Auth from "../../pages/Auth/Auth.jsx";
+import Profile from "../../pages/Profile/Profile.jsx";
+import Bookings from "../../pages/Bookings/Bookings.jsx";
 
 export default function App() {
   return (
@@ -25,6 +28,9 @@ export default function App() {
             <Route path="/hotels/:id/checkout" element={<HotelCheckout />} />
             <Route path="/holidays" element={<Holidays />} />
             <Route path="/trains" element={<Trains />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/bookings" element={<Bookings />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

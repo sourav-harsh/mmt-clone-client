@@ -11,7 +11,7 @@ export default function RoomSelection({ hotel, qs }) {
     params.get("checkOut") ||
     new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const nights = nightsBetween(checkIn, checkOut);
-  const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
+  const rooms = params.get("guests")?.split("Room").at(0) || 1;
 
   const [selectedId, setSelectedId] = useState(hotel.rooms[0].id);
   const selectedRoom = useMemo(
@@ -33,7 +33,7 @@ export default function RoomSelection({ hotel, qs }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-bold text-mmtDark text-lg">Select Rooms</h2>
         <p className="text-xs text-gray-500">
-            {rooms} {rooms > 1 ? "rooms" : "room"} • {nights} {nights > 1 ? "nights" : "night"} • {checkIn} → {checkOut}
+            {rooms} • {nights} {nights > 1 ? "nights" : "night"} • {checkIn} → {checkOut}
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
-import {Link, useParams, useSearchParams} from "react-router-dom";
+import {Link, Navigate, useParams, useSearchParams} from "react-router-dom";
 import {FaCheckCircle, FaLock, FaMapMarkerAlt, FaPlus, FaStar} from "react-icons/fa";
 import {getHotelById} from "../../kernel/presentation/utils/hotelsData.js";
 import NotFound from "../../kernel/presentation/utils/NotFound.jsx";
@@ -7,23 +7,50 @@ import {calcTotals, fmtINR, nightsBetween} from "../../kernel/presentation/utils
 import AddGuestDetails from "./components/AddGuestDetails.jsx";
 import {MdEdit} from "react-icons/md";
 import {IoMdClose} from "react-icons/io";
+import {addBooking} from "../../kernel/presentation/utils/authStore.js";
+import useAuth from "../../kernel/presentation/utils/useAuth.js";
 
 export default function HotelCheckout() {
     const {id} = useParams();
     const [params] = useSearchParams();
     const hotel = getHotelById(id);
+    const user = useAuth();
     const [guest, setGuest] = useState([]);
     const [guestEdit, setGuestEdit] = useState(null);
     const [guestHistory, setGuestHistory] = useState([]);
     const [payment, setPayment] = useState("card");
     const [confirmed, setConfirmed] = useState(false);
+    const [bookingId, setBookingId] = useState("");
     const room = useMemo(() => {
         if (!hotel) return null;
         const rid = params.get("roomId");
         return hotel.rooms.find((r) => r.id === rid) || hotel.rooms[0];
     }, [hotel, params]);
 
+
+    useEffect(() => {
+        if (user) {
+            setGuest((prev) => [
+                {
+                    firstName: user.firstName || "",
+                    lastName: user.lastName || "",
+                    email: user.email || "",
+                    phone: user.phone || "",
+                },
+            ]);
+        }
+    }, [user]);
+
     if (!hotel) return <NotFound/>;
+    if (!user)
+        return (
+            <Navigate
+                to={`/auth?redirect=${encodeURIComponent(
+                    `/hotels/${id}/checkout?${params.toString()}`
+                )}`}
+                replace
+            />
+        );
 
     useEffect(() => {
         const history = localStorage.getItem("guestHistory");
@@ -38,9 +65,9 @@ export default function HotelCheckout() {
         params.get("checkOut") ||
         new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const nights = nightsBetween(checkIn, checkOut);
-    const rooms = params.get("guests")?.split("Rooms").at(0) || 1;
-    const maxGuestsInfo = params.get("guests")?.split(",").at(1) || 1;
-    const maxGuests = params.get("guests")?.split(",").at(1)?.split("Adults").at(0) || 1;
+    const rooms = params.get("guests")?.split("Room").at(0) || 1;
+    const maxGuestsInfo = params.get("guests")?.split(",").at(1) || 2;
+    const maxGuests = params.get("guests")?.split(",").at(1)?.split("Adults").at(0) || 2;
     const totals = calcTotals(room.price, nights, rooms);
 
     const update = (k) => (e) => {
@@ -57,6 +84,22 @@ export default function HotelCheckout() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const record = addBooking({
+            hotelId: hotel.id,
+            hotelName: hotel.name,
+            address: hotel.address,
+            image: hotel.img,
+            roomId: room.id,
+            roomName: room.name,
+            checkIn,
+            checkOut,
+            nights,
+            guests: 2,
+            total: totals.total,
+            payment: payment === "card" ? "Card" : payment.toUpperCase(),
+            guest,
+        });
+        setBookingId(record.id);
         setConfirmed(true);
         window.scrollTo({top: 0, behavior: "smooth"});
     };
@@ -64,25 +107,32 @@ export default function HotelCheckout() {
     if (confirmed) {
         return (
             <div className="bg-gray-50 min-h-screen py-10">
-                <div
-                    className="max-w-2xl mx-auto px-4 bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
-                    <FaCheckCircle className="text-green-600 text-5xl mx-auto"/>
+                <div className="max-w-2xl mx-auto px-4 bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
+                    <FaCheckCircle className="text-green-600 text-5xl mx-auto" />
                     <h1 className="text-2xl font-bold text-mmtDark mt-4">Booking Confirmed!</h1>
                     <p className="text-sm text-gray-600 mt-2">
                         Thanks {guest.firstName || "Guest"}, your stay at <strong>{hotel.name}</strong> is
                         booked from <strong>{checkIn}</strong> to <strong>{checkOut}</strong>.
                     </p>
                     <div className="mt-4 text-left bg-gray-50 rounded p-4 text-sm">
-                        <p><strong>Booking ID:</strong> MMT{Math.floor(Math.random() * 9_000_000 + 1_000_000)}</p>
+                        <p><strong>Booking ID:</strong> {bookingId}</p>
                         <p><strong>Room:</strong> {room.name}</p>
                         <p><strong>Amount Paid:</strong> {fmtINR(totals.total)}</p>
                     </div>
-                    <Link
-                        to="/hotels"
-                        className="inline-block mt-6 bg-mmtBlue hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded"
-                    >
-                        Back to Hotels
-                    </Link>
+                    <div className="flex gap-3 justify-center mt-6">
+                        <Link
+                            to="/bookings"
+                            className="bg-mmtBlue hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded"
+                        >
+                            View My Bookings
+                        </Link>
+                        <Link
+                            to="/hotels"
+                            className="border border-mmtBlue text-mmtBlue font-bold px-6 py-2.5 rounded hover:bg-blue-50"
+                        >
+                            Back to Hotels
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
